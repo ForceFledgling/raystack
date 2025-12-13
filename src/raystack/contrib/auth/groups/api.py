@@ -1,6 +1,6 @@
 from typing import Union
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from raystack.compat import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 import jwt
 from jwt import PyJWTError as JWTError
@@ -16,7 +16,7 @@ from starlette.responses import JSONResponse, \
     HTMLResponse
 
 
-from fastapi.security import OAuth2PasswordBearer
+from raystack.compat import OAuth2PasswordBearer
 from datetime import datetime
 
 

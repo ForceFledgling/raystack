@@ -2,8 +2,7 @@ from collections.abc import Generator
 from typing import Union
 
 import jwt
-from fastapi import Depends, HTTPException, status, Request
-from fastapi.security import OAuth2PasswordBearer
+from raystack.compat import Depends, HTTPException, status, Request, OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from pydantic import ValidationError
 from sqlmodel import Session

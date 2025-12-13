@@ -1,6 +1,6 @@
 from functools import wraps
-from fastapi import Request
-from fastapi.responses import RedirectResponse
+from raystack.compat import Request
+from raystack.compat import RedirectResponse
 from starlette.authentication import has_required_scope
 
 

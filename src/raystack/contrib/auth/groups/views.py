@@ -1,6 +1,5 @@
 import os
-from fastapi import APIRouter, Request, Depends, HTTPException, status
-from fastapi.responses import HTMLResponse, RedirectResponse
+from raystack.compat import APIRouter, Request, Depends, HTTPException, status
 from raystack.shortcuts import render_template
 from raystack.contrib.auth.groups.forms import GroupCreateForm, GroupUpdateForm
 from raystack.contrib.auth.groups.models import GroupModel
@@ -17,8 +16,7 @@ from starlette.responses import JSONResponse, \
     FileResponse, \
     HTMLResponse
 
-from fastapi.security import OAuth2PasswordBearer
-from fastapi.responses import JSONResponse
+from raystack.compat import OAuth2PasswordBearer
 
 router = APIRouter()
 

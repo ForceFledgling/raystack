@@ -1,8 +1,8 @@
 import jwt
 from datetime import datetime, timedelta
 from typing import Optional
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from raystack.compat import Depends, HTTPException, status
+from raystack.compat import OAuth2PasswordBearer
 from starlette.authentication import requires
 from raystack.contrib.auth.users.models import UserModel
 import bcrypt

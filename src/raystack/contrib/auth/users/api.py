@@ -1,6 +1,6 @@
 from typing import Union, List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from raystack.compat import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 import jwt
 from jwt import PyJWTError as JWTError

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request
+from raystack.compat import APIRouter, Request
 from starlette.responses import JSONResponse, RedirectResponse
 from raystack.contrib.auth.users.models import UserModel
 from raystack.contrib.auth.users.utils import check_password, generate_jwt

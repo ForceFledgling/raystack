@@ -5,8 +5,8 @@ import logging
 # import importlib.util
 import importlib
 
-from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
+from starlette.applications import Starlette
+from starlette.staticfiles import StaticFiles
 
 from raystack.conf import settings
 from raystack import shortcuts
@@ -23,7 +23,7 @@ def setup():
 logger = logging.getLogger("uvicorn")
 
 
-class Raystack(FastAPI):
+class Raystack(Starlette):
 
     def __init__(self):
         super().__init__()
@@ -50,7 +50,7 @@ class Raystack(FastAPI):
 
             # If module contains routers, include them
             if hasattr(module, "router"):
-                self.include_router(module.router)
+                self.mount("", module.router)
                 logger.info(f"✅'{app_path}.router'")
             else:
                 logger.warning(f"⚠️ '{app_path}.router'")

@@ -1,6 +1,6 @@
 import os
-from fastapi import APIRouter, Request, Depends, HTTPException, status
-from fastapi.responses import HTMLResponse, RedirectResponse
+from raystack.compat import APIRouter, Request, Depends, HTTPException, status
+from raystack.compat import HTMLResponse, RedirectResponse
 from raystack.shortcuts import render_template
 from raystack.contrib.auth.users.forms import UserCreateForm, UserUpdateForm
 from raystack.contrib.auth.users.models import UserModel

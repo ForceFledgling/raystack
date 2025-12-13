@@ -1,5 +1,5 @@
 from raystack.shortcuts import render_template
-from fastapi import Request, Depends
+from raystack.compat import Request, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 

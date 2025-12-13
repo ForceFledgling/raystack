@@ -1,4 +1,4 @@
-from fastapi import Depends
+from raystack.compat import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 # Use framework functionality for database operations

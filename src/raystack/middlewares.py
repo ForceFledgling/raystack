@@ -1,5 +1,5 @@
-from fastapi import Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from starlette.requests import Request
+from starlette.responses import HTMLResponse, RedirectResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.authentication import AuthenticationBackend, SimpleUser, AuthCredentials
 import jwt

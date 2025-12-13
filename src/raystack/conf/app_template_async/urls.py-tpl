@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from raystack.compat import APIRouter
 from . import views
 
 router = APIRouter()

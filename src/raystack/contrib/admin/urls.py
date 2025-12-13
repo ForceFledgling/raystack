@@ -1,15 +1,10 @@
 import os
 
-from fastapi import APIRouter, Request
-
+from raystack.compat import APIRouter, Request, Depends, HTTPException, status, OAuth2PasswordBearer
 from raystack.conf import settings
 from raystack.shortcuts import render_template
-
-from fastapi import Depends, HTTPException, status
 import jwt
 from jwt import PyJWTError as JWTError
-
-from fastapi.security import OAuth2PasswordBearer
 
 from raystack.contrib.auth.accounts.decorators import login_required
 

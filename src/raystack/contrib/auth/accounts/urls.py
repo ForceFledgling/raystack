@@ -1,7 +1,7 @@
 import os
 
-from fastapi import APIRouter, Request, Depends, HTTPException, status
-from fastapi.responses import HTMLResponse, RedirectResponse
+from raystack.compat import APIRouter, Request, Depends, HTTPException, status
+from raystack.compat import HTMLResponse, RedirectResponse
 
 # from raystack.conf import settings
 from raystack.shortcuts import render_template
@@ -30,7 +30,7 @@ from raystack.contrib.auth.accounts.utils import get_current_active_superuser_fr
 import jwt
 from jwt import PyJWTError as JWTError
 
-from fastapi.security import OAuth2PasswordBearer
+from raystack.compat import OAuth2PasswordBearer
 
 
 router = APIRouter()

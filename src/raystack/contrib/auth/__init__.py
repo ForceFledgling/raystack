@@ -2,7 +2,7 @@
 Raystack built-in authentication (users, groups, accounts).
 """
 
-from fastapi import APIRouter
+from raystack.compat import APIRouter
 
 from raystack.contrib.auth.users import api as users_api
 from raystack.contrib.auth.groups import api as groups_api

@@ -1,6 +1,5 @@
-from fastapi import FastAPI, Request
+from raystack.compat import Request, JSONResponse, HTMLResponse
 from raystack import Raystack
-from fastapi.responses import JSONResponse, HTMLResponse
 from jose import JWTError, jwt
 from config.settings import SECRET_KEY, ALGORITHM
 from starlette.middleware.authentication import AuthenticationMiddleware
