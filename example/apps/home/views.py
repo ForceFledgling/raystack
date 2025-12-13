@@ -1,5 +1,5 @@
 from raystack.shortcuts import render_template
-from fastapi import Request
+from raystack.compat import Request
 
 # Create your views here.
 

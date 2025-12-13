@@ -34,6 +34,8 @@ class Raystack(Starlette):
         # Get absolute path to current directory
         self.raystack_directory = os.path.dirname(os.path.abspath(__file__))
         
+        # Include OpenAPI first, before other routers
+        self.include_openapi()
         # Include routers
         self.include_routers()
         self.include_templates()
@@ -50,6 +52,7 @@ class Raystack(Starlette):
 
             # If module contains routers, include them
             if hasattr(module, "router"):
+                # In Starlette, mount routers directly
                 self.mount("", module.router)
                 logger.info(f"✅'{app_path}.router'")
             else:
@@ -104,3 +107,14 @@ class Raystack(Starlette):
                     logger.info(f"✅'{middleware_path}'")
                 except Exception as e:
                     logger.warning(f"⚠️ Failed to load middleware '{middleware_path}': {e}")
+    
+    def include_openapi(self):
+        """Include OpenAPI/Swagger UI documentation."""
+        try:
+            from raystack.contrib.openapi import setup_openapi
+            docs_url = getattr(self.settings, 'DOCS_URL', '/docs')
+            openapi_url = getattr(self.settings, 'OPENAPI_URL', '/openapi.json')
+            setup_openapi(self, docs_url=docs_url, openapi_url=openapi_url)
+            logger.info(f"✅ OpenAPI documentation available at {docs_url}")
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to setup OpenAPI: {e}")

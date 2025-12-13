@@ -47,42 +47,66 @@ class APIRouter(Router):
             combined_tags = self.tags
         
         # Mount the router with the combined prefix
+        # In Starlette, mount() adds a Mount route to the router
         if full_prefix:
-            # Create a new router with the prefix
-            prefixed_router = Router()
-            prefixed_router.mount(full_prefix, router)
-            self.mount("", prefixed_router)
+            # Mount with prefix
+            self.mount(full_prefix, router)
         else:
-            self.mount("", router)
+            # Mount without prefix - add all routes directly to this router
+            # This is needed because mount("", router) doesn't work as expected
+            for route in router.routes:
+                self.routes.append(route)
+    
+    def _filter_starlette_kwargs(self, kwargs: dict) -> dict:
+        """Filter kwargs to only include those supported by Starlette Router."""
+        # Starlette Router.add_route() supports: path, endpoint, methods, name, include_in_schema
+        # FastAPI-specific kwargs to ignore: response_model, tags, dependencies, status_code, etc.
+        supported = {'name', 'include_in_schema'}
+        return {k: v for k, v in kwargs.items() if k in supported}
+    
+    def add_api_route(self, path: str, endpoint: Callable, methods: Optional[list] = None, **kwargs):
+        """
+        FastAPI-compatible method to add a route.
+        Equivalent to add_route but filters FastAPI-specific kwargs.
+        """
+        if methods is None:
+            methods = ["GET"]
+        filtered_kwargs = self._filter_starlette_kwargs(kwargs)
+        return self.add_route(path, endpoint, methods=methods, **filtered_kwargs)
     
     def get(self, path: str, **kwargs):
         """Decorator for GET routes."""
         def decorator(func: Callable):
-            return self.add_route(path, func, methods=["GET"], **kwargs)
+            filtered_kwargs = self._filter_starlette_kwargs(kwargs)
+            return self.add_route(path, func, methods=["GET"], **filtered_kwargs)
         return decorator
     
     def post(self, path: str, **kwargs):
         """Decorator for POST routes."""
         def decorator(func: Callable):
-            return self.add_route(path, func, methods=["POST"], **kwargs)
+            filtered_kwargs = self._filter_starlette_kwargs(kwargs)
+            return self.add_route(path, func, methods=["POST"], **filtered_kwargs)
         return decorator
     
     def put(self, path: str, **kwargs):
         """Decorator for PUT routes."""
         def decorator(func: Callable):
-            return self.add_route(path, func, methods=["PUT"], **kwargs)
+            filtered_kwargs = self._filter_starlette_kwargs(kwargs)
+            return self.add_route(path, func, methods=["PUT"], **filtered_kwargs)
         return decorator
     
     def delete(self, path: str, **kwargs):
         """Decorator for DELETE routes."""
         def decorator(func: Callable):
-            return self.add_route(path, func, methods=["DELETE"], **kwargs)
+            filtered_kwargs = self._filter_starlette_kwargs(kwargs)
+            return self.add_route(path, func, methods=["DELETE"], **filtered_kwargs)
         return decorator
     
     def patch(self, path: str, **kwargs):
         """Decorator for PATCH routes."""
         def decorator(func: Callable):
-            return self.add_route(path, func, methods=["PATCH"], **kwargs)
+            filtered_kwargs = self._filter_starlette_kwargs(kwargs)
+            return self.add_route(path, func, methods=["PATCH"], **filtered_kwargs)
         return decorator
 
 
@@ -146,3 +170,4 @@ class OAuth2PasswordBearer:
                 detail="Invalid authentication scheme"
             )
         return token
+
