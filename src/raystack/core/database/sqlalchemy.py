@@ -54,17 +54,30 @@ class SQLAlchemyBackend:
         """Initialize database connection."""
         if self._initialized:
             return
+        
+        # Convert async URL to sync URL for synchronous operations
+        sync_url = self.database_url
+        if self.is_async_url():
+            # Convert async URLs to sync URLs
+            if '+aiosqlite://' in sync_url:
+                sync_url = sync_url.replace('sqlite+aiosqlite://', 'sqlite://')
+            elif '+asyncpg://' in sync_url:
+                sync_url = sync_url.replace('postgresql+asyncpg://', 'postgresql://')
+            elif '+aiomysql://' in sync_url:
+                sync_url = sync_url.replace('mysql+aiomysql://', 'mysql://')
+            elif '+asyncmy://' in sync_url:
+                sync_url = sync_url.replace('mysql+asyncmy://', 'mysql://')
             
         # Create engine
-        if self.database_url.startswith('sqlite://'):
+        if sync_url.startswith('sqlite://'):
             # For SQLite use StaticPool for better compatibility
             self.engine = create_engine(
-                self.database_url,
+                sync_url,
                 poolclass=StaticPool,
                 connect_args={"check_same_thread": False}
             )
         else:
-            self.engine = create_engine(self.database_url)
+            self.engine = create_engine(sync_url)
         
         # Create session factory
         self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)

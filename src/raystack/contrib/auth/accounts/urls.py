@@ -72,11 +72,11 @@ async def login_post(request: Request):
         # Generate JWT token
         token = generate_jwt(user.id)
         
-        response = RedirectResponse(url="/admin/", status_code=status.HTTP_303_SEE_OTHER)
+        response = RedirectResponse(url="/admin/", status_code=303)
         response.set_cookie(key="jwt", value=token, httponly=True) # Secure cookie
         return response
     else:
-        return RedirectResponse(url="/accounts/login?error=invalid_credentials", status_code=status.HTTP_303_SEE_OTHER)
+        return RedirectResponse(url="/accounts/login?error=invalid_credentials", status_code=303)
 
 
 @router.get("/register", response_model=None)

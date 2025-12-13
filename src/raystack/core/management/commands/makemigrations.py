@@ -54,7 +54,8 @@ class Command(BaseCommand):
             # Initialize migration system if needed
             migration_manager.init()
             
-            # Initialize database if needed
+            # Force synchronous mode for migrations
+            # Initialize database if needed (sync mode)
             if hasattr(db, 'initialize') and not db._initialized:
                 db.initialize()
             
@@ -162,21 +163,18 @@ class Command(BaseCommand):
     def _get_existing_tables(self):
         """Gets a list of existing tables in the database"""
         try:
+            # Ensure database is initialized in sync mode
+            if not db._initialized:
+                db.initialize()
+            
             if hasattr(db, 'engine') and db.engine:
-                # For SQLAlchemy
-                with db.engine.connect() as connection:
-                    if db.engine.dialect.name == 'sqlite':
-                        result = connection.execute("SELECT name FROM sqlite_master WHERE type='table'")
-                    elif db.engine.dialect.name == 'postgresql':
-                        result = connection.execute("SELECT tablename FROM pg_tables WHERE schemaname='public'")
-                    elif db.engine.dialect.name == 'mysql':
-                        result = connection.execute("SHOW TABLES")
-                    else:
-                        # For other databases use general approach
-                        result = connection.execute("SELECT table_name FROM information_schema.tables WHERE table_schema='public'")
-                    
-                    tables = [row[0] for row in result.fetchall()]
-                    return tables
+                # Use direct SQLAlchemy connection to avoid async/sync issues
+                from sqlalchemy import text, inspect
+                
+                # Use inspector for better compatibility
+                inspector = inspect(db.engine)
+                tables = inspector.get_table_names()
+                return tables
             return []
         except Exception as e:
             self.stdout.write(

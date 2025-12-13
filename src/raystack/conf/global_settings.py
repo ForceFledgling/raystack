@@ -535,11 +535,11 @@ AUTH_USER_MODEL = "auth.User"
 
 AUTHENTICATION_BACKENDS = ["raystack.contrib.auth.backends.ModelBackend"]
 
-LOGIN_URL = "/auth/accounts/login/"
+LOGIN_URL = "/accounts/login/"
 
 LOGIN_REDIRECT_URL = "/accounts/profile/"
 
-LOGOUT_REDIRECT_URL = "/auth/accounts/login/"
+LOGOUT_REDIRECT_URL = "/accounts/login/"
 
 # The number of seconds a password reset link is valid for (default: 3 days).
 PASSWORD_RESET_TIMEOUT = 60 * 60 * 24 * 3
