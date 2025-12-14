@@ -1,4 +1,4 @@
-# 🚀 Raystack: Where FastAPI Speed Meets Django Elegance
+# 🚀 Raystack: Where Starlette Speed Meets Django Elegance
 
 ![PyPI Version](https://img.shields.io/pypi/v/raystack)
 ![Python Versions](https://img.shields.io/pypi/pyversions/raystack) ![Python 3.6+](https://img.shields.io/badge/Python-3.6%2B-blue)
@@ -69,14 +69,6 @@ DATABASES = {
 *   **SQLite**: `sqlite+aiosqlite:///db.sqlite3` (requires `aiosqlite`)
 *   **PostgreSQL**: `postgresql+asyncpg://user:pass@localhost/dbname` (requires `asyncpg`)
 *   **MySQL**: `mysql+aiomysql://user:pass@localhost/dbname` (requires `aiomysql`)
-
-### Benefits:
-
-*   ✅ **Explicit Control**: You explicitly choose the mode in settings, not based on execution context.
-*   ✅ **Predictable Behavior**: Database operations are always clear and predictable.
-*   ✅ **Framework Agnostic**: Works consistently with FastAPI, Django, Flask, or any other framework.
-*   ✅ **Easy Switching**: Simply change the URL to switch between sync and async modes.
-*   ✅ **Clear Intent**: The URL clearly indicates whether you're using sync or async database drivers.
 
 ## 🛠️ ORM Usage Examples
 
