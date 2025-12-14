@@ -24,8 +24,8 @@ ALLOWED_HOSTS = ['*']
 DEBUG = True
 
 INSTALLED_APPS = [
-    'raystack.contrib.admin',
-    'raystack.contrib.auth',
+    # Add your apps here
+    # Example: 'apps.admin' for admin interface
     'apps.{{ app_name }}',
 ]
 

@@ -186,9 +186,21 @@ class Command(BaseCommand):
         """Imports all models for registration in ModelMeta"""
         try:
             # Import models from contrib
-            import raystack.contrib.auth.users.models
-            import raystack.contrib.auth.groups.models
-            import raystack.contrib.admin.models
+            # Try to import auth models from installed apps
+            try:
+                from raystack.conf import get_settings
+                settings = get_settings()
+                for app_path in getattr(settings, 'INSTALLED_APPS', []):
+                    if 'auth' in app_path.lower():
+                        try:
+                            # Try to import models submodule
+                            models_path = app_path + '.models'
+                            __import__(models_path)
+                        except ImportError:
+                            pass
+            except Exception:
+                pass
+            # Admin models are now in project apps, not in framework
             
             # Import models from project apps
             try:

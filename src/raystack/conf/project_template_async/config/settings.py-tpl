@@ -28,10 +28,8 @@ DEBUG = True
 
 INSTALLED_APPS = [
     'apps.{{ app_name }}',
-    'raystack.contrib.admin',
-    'raystack.contrib.auth.users',
-    'raystack.contrib.auth.accounts',
-    'raystack.contrib.auth.groups',
+    # Add your apps here
+    # Example: 'apps.admin' for admin interface
 ]
 
 TEMPLATES = [

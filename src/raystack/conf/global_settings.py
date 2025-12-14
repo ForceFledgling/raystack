@@ -533,7 +533,9 @@ CACHE_MIDDLEWARE_ALIAS = "default"
 
 AUTH_USER_MODEL = "auth.User"
 
-AUTHENTICATION_BACKENDS = ["raystack.contrib.auth.backends.ModelBackend"]
+# Authentication backends should be defined in project settings
+# Example: AUTHENTICATION_BACKENDS = ["apps.admin.auth.backends.ModelBackend"]
+AUTHENTICATION_BACKENDS = []
 
 LOGIN_URL = "/accounts/login/"
 
@@ -548,11 +550,8 @@ PASSWORD_RESET_TIMEOUT = 60 * 60 * 24 * 3
 # password using different algorithms will be converted automatically
 # upon login
 PASSWORD_HASHERS = [
-    "raystack.contrib.auth.hashers.PBKDF2PasswordHasher",
-    "raystack.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
-    "raystack.contrib.auth.hashers.Argon2PasswordHasher",
-    "raystack.contrib.auth.hashers.BCryptSHA256PasswordHasher",
-    "raystack.contrib.auth.hashers.ScryptPasswordHasher",
+    # Password hashers should be defined in project settings if needed
+    # Example: "apps.admin.auth.hashers.PBKDF2PasswordHasher",
 ]
 
 AUTH_PASSWORD_VALIDATORS = []

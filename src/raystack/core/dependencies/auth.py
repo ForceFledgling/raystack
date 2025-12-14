@@ -11,9 +11,54 @@ from starlette.authentication import SimpleUser # Import SimpleUser from Starlet
 # Lazy import to avoid errors when loading
 # from raystack.core.database.base import get_async_db, get_sync_engine
 from raystack.core.security.jwt import create_access_token, TokenPayload # Import TokenPayload
-from raystack.contrib.auth.users.models import UserModel # Import UserModel
 
 # Lazy imports to avoid circular dependencies
+# UserModel will be imported dynamically from installed apps when needed
+UserModel = None
+
+def _get_user_model():
+    """Lazy import UserModel from installed apps."""
+    global UserModel
+    if UserModel is not None:
+        return UserModel
+    
+    try:
+        from raystack.conf import get_settings
+        settings = get_settings()
+        
+        # Try to import from installed apps
+        for app_path in getattr(settings, 'INSTALLED_APPS', []):
+            if 'auth' in app_path.lower() and 'user' in app_path.lower():
+                try:
+                    # Try to import UserModel from the module
+                    parts = app_path.split('.')
+                    if len(parts) >= 2:
+                        # Try models submodule
+                        models_path = '.'.join(parts[:-1]) + '.models'
+                        try:
+                            module = __import__(models_path, fromlist=['UserModel'])
+                            if hasattr(module, 'UserModel'):
+                                UserModel = module.UserModel
+                                return UserModel
+                        except ImportError:
+                            pass
+                    
+                    # Try direct import
+                    module = __import__(app_path, fromlist=['UserModel'])
+                    if hasattr(module, 'UserModel'):
+                        UserModel = module.UserModel
+                        return UserModel
+                except (ImportError, AttributeError):
+                    continue
+            
+    except Exception:
+        pass
+    
+    # If not found, raise error - UserModel must be provided by installed apps
+    raise ImportError(
+        "UserModel not found. Make sure you have an auth app with UserModel "
+        "in your INSTALLED_APPS (e.g., apps.admin.auth.users)."
+    )
 
 def get_api_v1_str():
     try:
@@ -58,9 +103,13 @@ def get_db():
 # For Python 3.6 compatibility, we'll use regular types instead of Annotated
 SessionDep = Session
 TokenDep = str
-UserDep = Union[UserModel, SimpleUser] # Define UserDep to handle both UserModel and SimpleUser
+# UserDep will be defined after UserModel is loaded
+UserDep = None
 
-def get_current_user(request: Request, session: SessionDep, token: TokenDep = Depends(get_reusable_oauth2)) -> UserModel:
+def get_current_user(request: Request, session: SessionDep, token: TokenDep = Depends(get_reusable_oauth2)):
+    # Lazy load UserModel
+    UserModel = _get_user_model()
+    
     # First, check if user is already authenticated by middleware
     if "user" in request.scope and request.scope["user"] is not None:
         simple_user: SimpleUser = request.scope["user"]
@@ -90,9 +139,8 @@ def get_current_user(request: Request, session: SessionDep, token: TokenDep = De
         raise HTTPException(status_code=400, detail="Inactive user")
     return user
 
-CurrentUser = UserModel
-
-def get_current_active_superuser(current_user: CurrentUser) -> UserModel:
+def get_current_active_superuser(current_user):
+    UserModel = _get_user_model()
     if not current_user.is_superuser:
         raise HTTPException(
             status_code=403, detail="The user doesn't have enough privileges"

@@ -7,4 +7,10 @@ except ImportError as e:
     logger.warning(f"Failed to import database module: {e}")
 
 from . import security
-from . import dependencies
+# Dependencies are now project-specific, not part of framework core
+# Projects should define their own dependencies (e.g., in apps/admin/deps.py)
+try:
+    from . import dependencies
+except ImportError:
+    # Dependencies module is optional
+    pass
