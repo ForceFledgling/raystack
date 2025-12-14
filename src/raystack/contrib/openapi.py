@@ -225,3 +225,5 @@ def setup_openapi(app, docs_url: str = "/docs", openapi_url: str = "/openapi.jso
     
     # Add Swagger UI endpoint
     app.add_route(docs_url, swagger_ui, methods=["GET"])
+
+

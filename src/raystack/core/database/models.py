@@ -170,7 +170,7 @@ class Model(metaclass=ModelMeta):
 
     def save(self):
         from raystack.core.database.query import universal_executor
-        return universal_executor(self._save_sync, self._save_async, self)
+        return universal_executor(self._save_sync, self._save_async)
 
     def _save_sync(self):
         print(f"[DEBUG] _save_sync called for {self.__class__.__name__}")
@@ -224,13 +224,45 @@ class Model(metaclass=ModelMeta):
     
     async def _save_async(self):
         # async save implementation
-        # Get field values from object
-        data = {field: getattr(self, field, None) for field in self._fields}
+        # Get field values from object (same logic as _save_sync)
+        from raystack.core.database.fields import Field
+        data = {}
+        for field, field_obj in self._fields.items():
+            if isinstance(field_obj, AutoField):
+                continue  # Don't add id to data at all
+            
+            # Get value from instance __dict__ first (actual instance value)
+            value = self.__dict__.get(field, None)
+            
+            # If not in __dict__, try getattr (might return Field object)
+            if value is None:
+                value = getattr(self, field, None)
+            
+            # Check if value is a Field object (not set in instance)
+            if isinstance(value, Field):
+                # Use default value if available
+                if hasattr(field_obj, 'default') and field_obj.default is not None:
+                    value = field_obj.default() if callable(field_obj.default) else field_obj.default
+                else:
+                    # If no default and field allows null, use None
+                    if hasattr(field_obj, 'null') and field_obj.null:
+                        value = None
+                    else:
+                        # Skip field if no default and NOT NULL
+                        continue
+            
+            if isinstance(field_obj, ForeignKeyField):
+                if hasattr(value, 'id'):
+                    value = value.id
+            data[field] = value
 
         # Convert values to supported types
         def convert_value(value):
             if isinstance(value, (int, float, str, bytes, type(None))):
                 return value
+            elif isinstance(value, Field):
+                # If still a Field object, return None
+                return None
             elif hasattr(value, '__str__'):
                 return str(value)  # Convert object to string if possible
             else:
@@ -239,29 +271,43 @@ class Model(metaclass=ModelMeta):
         data = {key: convert_value(value) for key, value in data.items()}
 
         # Check if object exists in database
-        if hasattr(self, 'id') and self.id is not None:
+        id_value = self.__dict__.get('id', None)
+        if id_value not in (None, 0, ''):
             # Update existing record (UPDATE)
             set_clauses = []
             for key, value in data.items():
-                if key != 'id':
-                    if isinstance(value, str):
-                        set_clauses.append(f'"{key}"=\'{value}\'')
-                    else:
-                        set_clauses.append(f'"{key}"={value}')
+                if value is None:
+                    set_clauses.append(f'"{key}"=NULL')
+                elif isinstance(value, str):
+                    # Escape single quotes in strings
+                    escaped_value = value.replace("'", "''")
+                    set_clauses.append(f'"{key}"=\'{escaped_value}\'')
+                else:
+                    set_clauses.append(f'"{key}"={value}')
             
-            update_query = f"UPDATE {self.get_table_name()} SET {', '.join(set_clauses)} WHERE id={self.id}"
+            update_query = f"UPDATE {self.get_table_name()} SET {', '.join(set_clauses)} WHERE id={id_value}"
             await db.execute_async(update_query)
         else:
             # Create new record (INSERT)
             fields = []
             values = []
             for key, value in data.items():
-                if key != 'id':
-                    fields.append(f'"{key}"')
-                    if isinstance(value, str):
-                        values.append(f"'{value}'")
-                    else:
-                        values.append(str(value))
+                # Skip NULL values for NOT NULL fields
+                if value is None:
+                    field_obj = self._fields.get(key)
+                    if field_obj and not (hasattr(field_obj, 'null') and field_obj.null):
+                        # Field is NOT NULL, skip it (will use default or fail)
+                        continue
+                
+                fields.append(f'"{key}"')
+                if value is None:
+                    values.append('NULL')
+                elif isinstance(value, str):
+                    # Escape single quotes in strings
+                    escaped_value = value.replace("'", "''")
+                    values.append(f"'{escaped_value}'")
+                else:
+                    values.append(str(value))
 
             insert_query = f"INSERT INTO {self.get_table_name()} ({', '.join(fields)}) VALUES ({', '.join(values)})"
             await db.execute_async(insert_query)
@@ -296,7 +342,7 @@ class Model(metaclass=ModelMeta):
         Deletes record from database.
         """
         from raystack.core.database.query import universal_executor
-        return universal_executor(self._delete_sync, self._delete_async, self)
+        return universal_executor(self._delete_sync, self._delete_async)
 
     def _delete_sync(self):
         """

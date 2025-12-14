@@ -5,7 +5,7 @@ Provides FastAPI-like API on top of Starlette.
 from starlette.routing import Router
 from starlette.requests import Request
 from starlette.responses import HTMLResponse, RedirectResponse, JSONResponse, Response
-from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND, HTTP_422_UNPROCESSABLE_ENTITY, HTTP_500_INTERNAL_SERVER_ERROR
+from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_303_SEE_OTHER, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND, HTTP_422_UNPROCESSABLE_ENTITY, HTTP_500_INTERNAL_SERVER_ERROR
 from typing import Any, Callable, Optional
 from functools import wraps
 import inspect
@@ -122,6 +122,7 @@ class HTTPException(Exception):
 class status:
     HTTP_200_OK = HTTP_200_OK
     HTTP_201_CREATED = HTTP_201_CREATED
+    HTTP_303_SEE_OTHER = HTTP_303_SEE_OTHER
     HTTP_400_BAD_REQUEST = HTTP_400_BAD_REQUEST
     HTTP_401_UNAUTHORIZED = HTTP_401_UNAUTHORIZED
     HTTP_403_FORBIDDEN = HTTP_403_FORBIDDEN
@@ -170,4 +171,7 @@ class OAuth2PasswordBearer:
                 detail="Invalid authentication scheme"
             )
         return token
+
+
+
 

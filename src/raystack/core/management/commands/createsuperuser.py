@@ -129,7 +129,9 @@ class Command(BaseCommand):
                     password_hash=hashed_password,
                     age=0, # Default value, adjust as needed
                     organization="Admin",
-                    group=group_id
+                    group=group_id,
+                    is_active=True,
+                    is_superuser=True
                 )
                 self.stdout.write(f"Superuser '{username}' created successfully.")
             except Exception as e:

@@ -52,8 +52,15 @@ class Raystack(Starlette):
 
             # If module contains routers, include them
             if hasattr(module, "router"):
-                # In Starlette, mount routers directly
-                self.mount("", module.router)
+                # In Starlette, when mounting with empty path, add routes directly
+                # instead of using mount("", ...) to avoid nested mount issues
+                if hasattr(module.router, 'routes'):
+                    # Add all routes from the router directly to avoid nested mount problems
+                    for route in module.router.routes:
+                        self.router.routes.append(route)
+                else:
+                    # Fallback to mount if router doesn't have routes attribute
+                    self.mount("", module.router)
                 logger.info(f"✅'{app_path}.router'")
             else:
                 logger.warning(f"⚠️ '{app_path}.router'")
