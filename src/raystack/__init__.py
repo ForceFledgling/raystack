@@ -66,26 +66,11 @@ class Raystack(Starlette):
                 logger.warning(f"⚠️ '{app_path}.router'")
 
     def include_templates(self):
-        # Connect internal Raystack templates (e.g., admin templates)
-        internal_template_dirs = [
-            os.path.join(self.raystack_directory, "contrib", "templates")
-        ]
-        for template in self.settings.TEMPLATES:
-            # Add internal templates to user template directories
-            template_dirs = template.get("DIRS", [])
-            # Convert relative paths to absolute
-            template_dirs = [os.path.join(self.settings.BASE_DIR, path) for path in template_dirs]
-            # Add internal templates if not already present
-            for internal_dir in internal_template_dirs:
-                if internal_dir not in template_dirs:
-                    template_dirs.append(internal_dir)
-            template["DIRS"] = template_dirs
+        # Templates are now project-specific, not part of framework
+        # Projects should configure TEMPLATES['DIRS'] in their settings
+        pass
 
     def include_static(self):
-        # Include framework static files
-        internal_static_dir = os.path.join(self.raystack_directory, "contrib", "static")
-        self.mount("/admin_static", StaticFiles(directory=internal_static_dir), name="admin_static")
-
         # Include static files from STATICFILES_DIRS
         if hasattr(self.settings, 'STATICFILES_DIRS') and self.settings.STATICFILES_DIRS:
             for static_dir in self.settings.STATICFILES_DIRS:
@@ -93,7 +78,7 @@ class Raystack(Starlette):
                     self.mount("/static", StaticFiles(directory=static_dir), name="static")
                     break  # Mount only the first existing directory
         # Fallback to default static directory
-        elif self.settings.STATIC_URL:
+        elif hasattr(self.settings, 'STATIC_URL') and self.settings.STATIC_URL:
             static_dir = os.path.join(self.settings.BASE_DIR, self.settings.STATIC_URL)
             if os.path.exists(static_dir):
                 self.mount("/static", StaticFiles(directory=static_dir), name="static")
