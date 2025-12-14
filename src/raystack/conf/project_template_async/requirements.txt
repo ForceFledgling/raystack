@@ -1,8 +1,10 @@
 sqlmodel
 starlette
 uvicorn
-python-jose[cryptography]
-passlib[bcrypt]
+# Authentication dependencies (optional - uncomment if needed)
+# python-jose[cryptography]
+# passlib[bcrypt]
+# pyjwt>=2.0.0
 tenacity
 pydantic-settings
 email-validator

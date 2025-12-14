@@ -11,13 +11,10 @@ dependencies = [
     "starlette>=0.27.0",
     "asgiref>=3.0.0",
     "jinja2>=2.10.0",
-    "bcrypt>=3.0.0",
-    "pyjwt>=2.0.0",
     "python-multipart>=0.0.5",
     "sqlalchemy>=1.4.0,<2.0.0",
     "alembic>=1.8.0",
     "click>=7.0.0",
-    "passlib[bcrypt]",
     "sqlmodel>=0.0.8",
     "pydantic>=1.10.13,<2.0.0",
 ]

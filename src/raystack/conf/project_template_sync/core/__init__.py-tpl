@@ -1,7 +1,8 @@
 from raystack.compat import Request, JSONResponse, HTMLResponse
 from raystack import Raystack
-from jose import JWTError, jwt
-from config.settings import SECRET_KEY, ALGORITHM
+# JWT and authentication are optional - install pyjwt if needed
+# from pyjwt import jwt
+# from config.settings import SECRET_KEY, ALGORITHM
 from starlette.middleware.authentication import AuthenticationMiddleware
 from starlette.authentication import (
     AuthenticationBackend, AuthenticationError, SimpleUser, UnauthenticatedUser,
@@ -52,18 +53,19 @@ async def not_found(request, exc):
     return RedirectResponse("/auth/accounts/login", status_code=303)
     # return render_template(request=request, template_name="401.html", context={"request": request})
 
-# Authentication class
-class userAuthentication(AuthenticationBackend):
-    async def authenticate(self, request):
-        jwt_cookie = request.cookies.get('jwt')
-        if jwt_cookie:  # cookie exists
-            try:
-                payload = jwt.decode(jwt_cookie.encode('utf8'), str(SECRET_KEY), algorithms=[ALGORITHM])
-                return AuthCredentials(["user_auth"]), SimpleUser(payload['user_id'])
-            except:
-                raise AuthenticationError('Invalid auth credentials')
-        else:
-            return  # unauthenticated
+# Authentication class (optional - uncomment and install pyjwt if needed)
+# class userAuthentication(AuthenticationBackend):
+#     async def authenticate(self, request):
+#         jwt_cookie = request.cookies.get('jwt')
+#         if jwt_cookie:  # cookie exists
+#             try:
+#                 import jwt
+#                 payload = jwt.decode(jwt_cookie.encode('utf8'), str(SECRET_KEY), algorithms=[ALGORITHM])
+#                 return AuthCredentials(["user_auth"]), SimpleUser(payload['user_id'])
+#             except:
+#                 raise AuthenticationError('Invalid auth credentials')
+#         else:
+#             return  # unauthenticated
 
 # Middleware for tracking history
 @app.middleware("http")
@@ -74,11 +76,11 @@ async def update_session_history(request, call_next):
     return response
 
 
-# Middleware for session management
-app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
+# Middleware for session management (optional - uncomment if needed)
+# app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
-# Middleware for authentication
-app.add_middleware(AuthenticationMiddleware, backend=userAuthentication())
+# Middleware for authentication (optional - uncomment if needed)
+# app.add_middleware(AuthenticationMiddleware, backend=userAuthentication())
 
 
 from apscheduler.schedulers.background import BackgroundScheduler

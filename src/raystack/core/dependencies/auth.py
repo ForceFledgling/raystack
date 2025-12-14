@@ -1,16 +1,26 @@
 from collections.abc import Generator
 from typing import Union
 
-import jwt
 from raystack.compat import Depends, HTTPException, status, Request, OAuth2PasswordBearer
-from jwt.exceptions import InvalidTokenError
 from pydantic import ValidationError
 from sqlmodel import Session
 from starlette.authentication import SimpleUser # Import SimpleUser from Starlette
 
+# JWT is optional - projects should install pyjwt if needed
+try:
+    import jwt
+    from jwt.exceptions import InvalidTokenError
+except ImportError:
+    jwt = None
+    InvalidTokenError = Exception
+
 # Lazy import to avoid errors when loading
 # from raystack.core.database.base import get_async_db, get_sync_engine
-from raystack.core.security.jwt import create_access_token, TokenPayload # Import TokenPayload
+try:
+    from raystack.core.security.jwt import create_access_token, TokenPayload # Import TokenPayload
+except ImportError:
+    create_access_token = None
+    TokenPayload = None
 
 # Lazy imports to avoid circular dependencies
 # UserModel will be imported dynamically from installed apps when needed
@@ -122,6 +132,12 @@ def get_current_user(request: Request, session: SessionDep, token: TokenDep = De
             return user
         
     # If not authenticated by middleware, try to authenticate via JWT token from header
+    if jwt is None or TokenPayload is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="JWT support not available. Install pyjwt: pip install pyjwt",
+        )
+    
     try:
         payload = jwt.decode(
             token, get_secret_key(), algorithms=[get_algorithm()]
