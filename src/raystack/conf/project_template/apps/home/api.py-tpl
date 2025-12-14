@@ -1,4 +1,4 @@
-from raystack.compat import APIRouter
+from raystack.compat import APIRouter, JSONResponse
 
 
 router = APIRouter()
@@ -8,5 +8,5 @@ router = APIRouter()
 
 # Example:
 @router.get("/example")
-def example():
-    return {"message": "text"}
+def example(request):
+    return JSONResponse({"message": "text"})
