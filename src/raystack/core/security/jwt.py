@@ -1,7 +1,12 @@
 from typing import Optional, Union, Any
-import jwt
 from datetime import datetime, timedelta
 from pydantic import BaseModel
+
+# JWT is optional - projects should install pyjwt if needed
+try:
+    import jwt
+except ImportError:
+    jwt = None
 
 class TokenPayload(BaseModel):
     sub: Optional[int] = None
@@ -9,6 +14,12 @@ class TokenPayload(BaseModel):
 def create_access_token(
     subject: Union[str, Any], expires_delta: Optional[timedelta] = None
 ) -> str:
+    if jwt is None:
+        raise ImportError(
+            "pyjwt is required for JWT token creation. "
+            "Install it with: pip install pyjwt"
+        )
+    
     # Get settings safely
     try:
         from raystack.conf import settings

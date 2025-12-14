@@ -2,7 +2,32 @@ import getpass
 import random
 import string
 from raystack.core.management.base import BaseCommand, CommandError
-from raystack.contrib.auth.accounts.utils import hash_password
+
+def _get_hash_password():
+    """Lazy import hash_password from installed apps."""
+    try:
+        # Try to import from installed apps
+        from raystack.conf import get_settings
+        settings = get_settings()
+        
+        for app_path in getattr(settings, 'INSTALLED_APPS', []):
+            if 'auth' in app_path.lower() and 'account' in app_path.lower():
+                try:
+                    # Try utils submodule
+                    utils_path = app_path + '.utils'
+                    module = __import__(utils_path, fromlist=['hash_password'])
+                    if hasattr(module, 'hash_password'):
+                        return module.hash_password
+                except (ImportError, AttributeError):
+                    continue
+    except Exception:
+        pass
+    
+    # If not found, raise error
+    raise ImportError(
+        "hash_password function not found. Make sure you have an auth app with "
+        "hash_password in your INSTALLED_APPS (e.g., apps.admin.auth.accounts)."
+    )
 
 
 class Command(BaseCommand):
@@ -50,22 +75,71 @@ class Command(BaseCommand):
             )
             return
 
-        # Try to get the User model
+        # Try to get the User model - search in INSTALLED_APPS
+        UserModel = None
         try:
-            from raystack.contrib.auth.users.models import UserModel
+            from raystack.conf import get_settings
+            settings = get_settings()
+            
+            # Try to import from installed apps
+            for app_path in getattr(settings, 'INSTALLED_APPS', []):
+                if 'auth' in app_path.lower() and 'user' in app_path.lower():
+                    try:
+                        # Try models submodule
+                        models_path = app_path + '.models'
+                        try:
+                            module = __import__(models_path, fromlist=['UserModel'])
+                            if hasattr(module, 'UserModel'):
+                                UserModel = module.UserModel
+                                break
+                        except ImportError:
+                            pass
+                        
+                        # Try direct import
+                        module = __import__(app_path, fromlist=['UserModel'])
+                        if hasattr(module, 'UserModel'):
+                            UserModel = module.UserModel
+                            break
+                    except (ImportError, AttributeError):
+                        continue
+            
             if not UserModel:
                 raise CommandError(
                     "Could not find User model. Make sure you have a User model "
-                    "defined in your apps (e.g., raystack.contrib.auth.users.models.UserModel)."
+                    "defined in your apps (e.g., apps.admin.auth.users.models.UserModel)."
                 )
         except ImportError:
             raise CommandError(
                 "Could not import User model. Make sure your apps are properly configured."
             )
 
-        # Try to get the Group model
+        # Try to get the Group model - search in INSTALLED_APPS
+        GroupModel = None
         try:
-            from raystack.contrib.auth.groups.models import GroupModel
+            from raystack.conf import get_settings
+            settings = get_settings()
+            
+            # Try to import from installed apps
+            for app_path in getattr(settings, 'INSTALLED_APPS', []):
+                if 'auth' in app_path.lower() and 'group' in app_path.lower():
+                    try:
+                        # Try models submodule
+                        models_path = app_path + '.models'
+                        try:
+                            module = __import__(models_path, fromlist=['GroupModel'])
+                            if hasattr(module, 'GroupModel'):
+                                GroupModel = module.GroupModel
+                                break
+                        except ImportError:
+                            pass
+                        
+                        # Try direct import
+                        module = __import__(app_path, fromlist=['GroupModel'])
+                        if hasattr(module, 'GroupModel'):
+                            GroupModel = module.GroupModel
+                            break
+                    except (ImportError, AttributeError):
+                        continue
             if not GroupModel:
                 GroupModel = None
         except ImportError:
@@ -97,7 +171,8 @@ class Command(BaseCommand):
                 raise CommandError(f"User with email '{email}' already exists.")
 
             # Hash the password using the unified utility
-            hashed_password = await hash_password(password)
+            hash_password_func = _get_hash_password()
+            hashed_password = await hash_password_func(password)
 
             # Get or create group
             group_id = None
@@ -129,7 +204,9 @@ class Command(BaseCommand):
                     password_hash=hashed_password,
                     age=0, # Default value, adjust as needed
                     organization="Admin",
-                    group=group_id
+                    group=group_id,
+                    is_active=True,
+                    is_superuser=True
                 )
                 self.stdout.write(f"Superuser '{username}' created successfully.")
             except Exception as e:
@@ -161,9 +238,21 @@ class Command(BaseCommand):
         """Imports all models for registration in ModelMeta"""
         try:
             # Import models from contrib
-            import raystack.contrib.auth.users.models
-            import raystack.contrib.auth.groups.models
-            import raystack.contrib.admin.models
+            # Try to import auth models from installed apps
+            try:
+                from raystack.conf import get_settings
+                settings = get_settings()
+                for app_path in getattr(settings, 'INSTALLED_APPS', []):
+                    if 'auth' in app_path.lower():
+                        try:
+                            # Try to import models submodule
+                            models_path = app_path + '.models'
+                            __import__(models_path)
+                        except ImportError:
+                            pass
+            except Exception:
+                pass
+            # Admin models are now in project apps, not in framework
             
             # Import models from project apps
             try:

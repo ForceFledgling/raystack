@@ -211,8 +211,39 @@ class TemplateCommand(BaseCommand):
                 if new_path.endswith(extensions) or filename in extra_files:
                     with open(old_path, encoding="utf-8") as template_file:
                         content = template_file.read()
-                    template = Engine().from_string(content)
-                    # content = template.render(context)
+                    
+                    # Convert Context to dict for Jinja2
+                    if hasattr(context, 'dicts'):
+                        context_dict = {}
+                        for d in context.dicts:
+                            if isinstance(d, dict):
+                                context_dict.update(d)
+                    elif isinstance(context, dict):
+                        context_dict = context
+                    else:
+                        # Try to convert context to dict
+                        try:
+                            context_dict = dict(context)
+                        except (TypeError, ValueError):
+                            context_dict = {}
+                    
+                    # Use jinja2 Template directly (no loader needed for string templates)
+                    try:
+                        import jinja2
+                        # Create a simple environment for string templates
+                        env = jinja2.Environment()
+                        template = env.from_string(content)
+                        content = template.render(**context_dict)
+                    except ImportError:
+                        # If jinja2 is not installed, just do simple string replacement
+                        # This is a fallback for template variable substitution
+                        content = content.replace("{{ project_name }}", context_dict.get("project_name", ""))
+                        content = content.replace("{{ app_name }}", context_dict.get("app_name", ""))
+                        content = content.replace("{{ secret_key }}", context_dict.get("secret_key", ""))
+                        # Replace other common variables
+                        for key, value in context_dict.items():
+                            content = content.replace(f"{{{{ {key} }}}}", str(value))
+                    
                     with open(new_path, "w", encoding="utf-8") as new_file:
                         new_file.write(content)
                 else:

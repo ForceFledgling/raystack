@@ -1,13 +1,21 @@
-from fastapi import Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from starlette.requests import Request
+from starlette.responses import HTMLResponse, RedirectResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.authentication import AuthenticationBackend, SimpleUser, AuthCredentials
-import jwt
+# JWT is optional - projects should install pyjwt if needed
+try:
+    import jwt
+except ImportError:
+    jwt = None
 from raystack.conf import settings
 
 class JWTAuthentication(AuthenticationBackend):
     """JWT authentication for checking tokens from cookies."""
     async def authenticate(self, request):
+        if jwt is None:
+            # JWT not available, skip authentication
+            return None
+            
         jwt_token = request.cookies.get("jwt")
         if not jwt_token:
             return None

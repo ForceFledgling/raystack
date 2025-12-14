@@ -133,10 +133,8 @@ class Command(BaseCommand):
         [
             "raystack.contrib.sessions.models.Session",
             "raystack.contrib.contenttypes.models.ContentType",
-            "raystack.contrib.auth.models.User",
-            "raystack.contrib.auth.models.Group",
-            "raystack.contrib.auth.models.Permission",
-            "raystack.contrib.admin.models.LogEntry",
+            # Auth and admin models are now in project apps, not in framework
+            # Example: "apps.admin.auth.users.models.UserModel",
         ]
 
         """
