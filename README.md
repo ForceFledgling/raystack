@@ -7,30 +7,6 @@
 
 **Raystack** is a modern, lightweight Python web framework that merges the asynchronous power of Starlette with the battle-tested structure and development convenience inspired by Django. A clean, minimal framework that gives you the best of both worlds!
 
-## ✨ Why Choose Raystack?
-
-Do you love Starlette's speed but miss Django's organized project structure? Do you want a powerful ORM with built-in async support? Raystack is built for you! It's ideal for:
-
-*   **High-Performance APIs and Microservices**: Leverage Starlette's capabilities for blazing-fast and concurrent request handling.
-*   **Rapid Development of Web Applications**: Benefit from a ready-to-use project structure, optional templating, and CLI tools.
-*   **Developers Transitioning from Django**: Get up to speed instantly with familiar "app" concepts, ORM, and management commands.
-*   **Projects Requiring a Flexible and Robust ORM**: SQLAlchemy under the hood gives you full control over your database.
-*   **Minimal Dependencies**: Core framework without heavy dependencies - add only what you need.
-
-## 🌟 Key Features
-
-*   **Starlette at its Core**: Experience incredible speed and asynchronous performance for your web applications.
-*   **Django-Inspired Project Structure**: Organize your project with "apps" for clean, modular, and maintainable code.
-*   **Universal SQLAlchemy ORM**: A powerful and flexible ORM with a unified API for both synchronous and asynchronous operations.
-*   **Smart Database Management (Alembic)**: Seamless database migrations for effortless schema evolution.
-*   **Optional Jinja2 Templating**: Add templating support when needed (jinja2 is optional).
-*   **OpenAPI/Swagger Documentation**: Automatic API documentation at `/docs` endpoint.
-*   **Convenient CLI Commands**: Create projects and apps, run the server, manage migrations, and more—all from your command line.
-*   **Async-First Design**: Full support for asynchronous views and database operations with minimal effort.
-*   **Multi-Database Support**: Connect to SQLite, PostgreSQL, MySQL, and other databases with easy switching between sync and async drivers.
-*   **Extensible Architecture**: Easily integrate your own apps, middleware, and commands to tailor the framework to your needs.
-*   **Minimal Core**: Lightweight framework with only essential dependencies - add features as needed.
-
 ## ⚡ Quick Start
 
 Get your project up and running in minutes!
@@ -55,31 +31,6 @@ raystack runserver
 ```
 
 Open your browser and navigate to: [http://127.0.0.1:8000](http://127.0.0.1:8000/)
-
-## 🏗️ Project Structure
-
-Raystack offers a clear and modular project structure, inspired by Django:
-
-```mermaid
-graph TD
-    A[Raystack Project] --> B[myproject/];
-    B --> C[apps/];
-    C --> D[home/];
-    D --> D1[models.py];
-    D --> D2[views.py];
-    D --> D3[urls.py];
-    D --> D4[admin.py];
-    B --> E[config/];
-    E --> E1[settings.py];
-    E --> E2[urls.py];
-    B --> F[core/];
-    F --> F1[__init__.py];
-    B --> G[templates/];
-    G --> G1[base.html];
-    G --> G2[home/];
-    B --> H[requirements.txt];
-    B --> I[README.md];
-```
 
 ## 🌐 URL-Based Async/Sync Mode Detection
 
