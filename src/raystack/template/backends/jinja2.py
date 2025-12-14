@@ -1,6 +1,10 @@
 from pathlib import Path
 
-import jinja2
+# Jinja2 is optional
+try:
+    import jinja2
+except ImportError:
+    jinja2 = None
 
 from raystack.conf import settings
 from raystack.template import TemplateDoesNotExist, TemplateSyntaxError
@@ -15,6 +19,12 @@ class Jinja2(BaseEngine):
     app_dirname = "jinja2"
 
     def __init__(self, params):
+        if jinja2 is None:
+            raise ImportError(
+                "jinja2 is required for Jinja2 template backend. "
+                "Install it with: pip install jinja2"
+            )
+        
         params = params.copy()
         options = params.pop("OPTIONS").copy()
 

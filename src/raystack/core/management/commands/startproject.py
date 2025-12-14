@@ -28,24 +28,14 @@ class Command(TemplateCommand):
             action="store_true",
             help="Create project without home app",
         )
-        parser.add_argument(
-            "--async",
-            action="store_true",
-            help="Create an asynchronous project (default: synchronous).",
-        )
 
     def handle(self, **options):
         project_name = options.pop("name")
         target = options.pop("directory")
         with_home = options.pop("with_home", False)  # store_true defaults to False
         no_home = options.pop("no_home", False)      # store_true defaults to False
-        async_project = options.pop("async", False)  # store_true defaults to False
 
-        if async_project:
-            template_name = "project_template_async"
-        else:
-            template_name = "project_template_sync"
-
+        template_name = "project_template"
         options["template"] = os.path.join(raystack.__path__[0], "conf", template_name)
 
         # Create a random SECRET_KEY to put it in the main settings.

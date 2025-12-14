@@ -26,19 +26,20 @@ DEBUG = True
 INSTALLED_APPS = [
     # Add your apps here
     # Example: 'apps.admin' for admin interface
-    'apps.{{ app_name }}',
+    'apps.home',
 ]
 
-TEMPLATES = [
-    {
-        "BACKEND": "raystack.template.backends.jinja2.Jinja2",
-        "DIRS": [
-            "templates",
-            "jinja2"
-        ],
-        "APP_DIRS": True
-    },
-]
+# Templates are optional - uncomment if you need template rendering (requires jinja2)
+# TEMPLATES = [
+#     {
+#         "BACKEND": "raystack.template.backends.jinja2.Jinja2",
+#         "DIRS": [
+#             "templates",
+#             "jinja2"
+#         ],
+#         "APP_DIRS": True
+#     },
+# ]
 
 STATIC_URL = "static/"
 

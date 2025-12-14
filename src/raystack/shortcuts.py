@@ -13,8 +13,15 @@ def render_template(
     """
     Return an HttpResponse whose content is filled with the result of calling
     raystack.template.loader.render_to_string() with the passed arguments.
-    """
-    from raystack.template import loader
     
-    content = loader.render_to_string(template_name, context, request, using=using)
-    return HTMLResponse(content)
+    Requires jinja2 to be installed.
+    """
+    try:
+        from raystack.template import loader
+        content = loader.render_to_string(template_name, context, request, using=using)
+        return HTMLResponse(content)
+    except ImportError:
+        raise ImportError(
+            "jinja2 is required for template rendering. "
+            "Install it with: pip install jinja2"
+        )
