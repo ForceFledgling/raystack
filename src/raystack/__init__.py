@@ -72,16 +72,24 @@ class Raystack(Starlette):
 
     def include_static(self):
         # Include static files from STATICFILES_DIRS
+        static_url = getattr(self.settings, 'STATIC_URL', '/static')
+        if static_url:
+            # Normalize URL prefix
+            static_url = '/' + static_url.strip('/')
+        else:
+            static_url = '/static'
+
         if hasattr(self.settings, 'STATICFILES_DIRS') and self.settings.STATICFILES_DIRS:
             for static_dir in self.settings.STATICFILES_DIRS:
                 if os.path.exists(static_dir):
-                    self.mount("/static", StaticFiles(directory=static_dir), name="static")
+                    self.mount(static_url, StaticFiles(directory=static_dir), name="static")
                     break  # Mount only the first existing directory
         # Fallback to default static directory
         elif hasattr(self.settings, 'STATIC_URL') and self.settings.STATIC_URL:
-            static_dir = os.path.join(self.settings.BASE_DIR, self.settings.STATIC_URL)
+            dir_name = self.settings.STATIC_URL.strip('/')
+            static_dir = os.path.join(self.settings.BASE_DIR, dir_name)
             if os.path.exists(static_dir):
-                self.mount("/static", StaticFiles(directory=static_dir), name="static")
+                self.mount(static_url, StaticFiles(directory=static_dir), name="static")
 
     def include_middleware(self):
         # Include middleware from settings
