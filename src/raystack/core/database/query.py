@@ -68,6 +68,10 @@ class QuerySet:
         self.params = None
         self.order_by_fields = []
 
+    def __await__(self):
+        """Allow awaiting a QuerySet directly in async contexts."""
+        return self.execute().__await__()
+
     def filter(self, **kwargs):
         # Always returns QuerySet, not coroutine
         return self._filter_sync(**kwargs)
