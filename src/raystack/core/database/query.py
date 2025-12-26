@@ -232,7 +232,8 @@ class QuerySet:
         last_id = db.lastrowid()
         if last_id is None:
             raise RuntimeError("Failed to retrieve the ID of the newly created record.")
-        return self.model_class.objects.get(id=last_id)
+        # Return a model instance without issuing an extra query
+        return self.model_class(id=last_id, **kwargs)
 
     async def _create_async(self, **kwargs):
         fields = []
@@ -257,7 +258,8 @@ class QuerySet:
         last_id = await db.lastrowid_async()
         if last_id is None:
             raise RuntimeError("Failed to retrieve the ID of the newly created record.")
-        return await self.model_class.objects.get(id=last_id)
+        # Return a model instance without issuing an extra query
+        return self.model_class(id=last_id, **kwargs)
 
     # Support for iterations and lazy loading
     def __repr__(self):

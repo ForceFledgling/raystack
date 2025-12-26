@@ -169,12 +169,55 @@ def generate_openapi_schema(
                     endpoint = route_info.get("endpoint")
                     summary = ""
                     description = ""
+                    request_body = None
                     
                     if endpoint:
                         if hasattr(endpoint, '__doc__') and endpoint.__doc__:
                             description = endpoint.__doc__.strip()
                         if hasattr(endpoint, '__name__'):
                             summary = endpoint.__name__.replace('_', ' ').title()
+
+                        # Infer request body schema from endpoint annotations
+                        try:
+                            import inspect
+                            from typing import get_origin, get_args
+                            from pydantic import BaseModel
+                            sig = inspect.signature(endpoint)
+                            for param in sig.parameters.values():
+                                annotation = param.annotation
+                                # Skip the request object
+                                if getattr(annotation, '__name__', '') == 'Request' or param.name == 'request':
+                                    continue
+                                origin = get_origin(annotation)
+                                args = get_args(annotation)
+                                model_cls = None
+                                if origin is None and isinstance(annotation, type) and issubclass(annotation, BaseModel):
+                                    model_cls = annotation
+                                elif origin is list and args and isinstance(args[0], type) and issubclass(args[0], BaseModel):
+                                    model_cls = args[0]
+                                elif origin is not None and args:
+                                    # Handle Optional/Union
+                                    for arg in args:
+                                        if isinstance(arg, type) and issubclass(arg, BaseModel):
+                                            model_cls = arg
+                                            break
+                                if model_cls:
+                                    model_name = model_cls.__name__
+                                    schema["components"]["schemas"][model_name] = model_cls.schema()
+                                    request_body = {
+                                        "required": True,
+                                        "content": {
+                                            "application/json": {
+                                                "schema": {"$ref": f"#/components/schemas/{model_name}"}
+                                            },
+                                            "application/x-www-form-urlencoded": {
+                                                "schema": {"$ref": f"#/components/schemas/{model_name}"}
+                                            }
+                                        }
+                                    }
+                                    break
+                        except Exception:
+                            pass
                     
                     schema["paths"][path][method_lower] = {
                         "summary": summary,
@@ -188,7 +231,8 @@ def generate_openapi_schema(
                                     }
                                 }
                             }
-                        }
+                        },
+                        **({"requestBody": request_body} if request_body else {})
                     }
     
     return schema
@@ -225,5 +269,4 @@ def setup_openapi(app, docs_url: str = "/docs", openapi_url: str = "/openapi.jso
     
     # Add Swagger UI endpoint
     app.add_route(docs_url, swagger_ui, methods=["GET"])
-
 
