@@ -2,7 +2,9 @@
 OpenAPI/Swagger UI integration for Raystack.
 """
 import json
-from typing import Any, Dict, List, Optional
+import re
+import inspect
+from typing import Any, Dict, List, Optional, get_origin, get_args
 from starlette.responses import HTMLResponse, JSONResponse
 from starlette.routing import Route
 from starlette.requests import Request
@@ -108,6 +110,17 @@ def generate_openapi_schema(
     """
     Generate OpenAPI 3.0 schema from routes.
     """
+
+    def _schema_from_annotation(annotation: Any) -> Dict[str, str]:
+        """Map Python type annotations to OpenAPI schema snippets."""
+        mapping = {
+            int: {"type": "integer"},
+            float: {"type": "number"},
+            bool: {"type": "boolean"},
+            str: {"type": "string"},
+        }
+        return mapping.get(annotation, {"type": "string"})
+
     schema = {
         "openapi": "3.0.0",
         "info": {
@@ -131,8 +144,9 @@ def generate_openapi_schema(
     if routes:
         all_routes = []
         
-        def collect_routes(route_list, base_path=""):
+        def collect_routes(route_list, base_path="", tags=None):
             """Recursively collect all routes."""
+            tags = tags or []
             for route in route_list:
                 # Handle Route objects
                 if hasattr(route, 'path') and hasattr(route, 'methods'):
@@ -142,15 +156,17 @@ def generate_openapi_schema(
                     all_routes.append({
                         "path": path,
                         "methods": list(route.methods) if hasattr(route, 'methods') else [],
-                        "endpoint": getattr(route, 'endpoint', None)
+                        "endpoint": getattr(route, 'endpoint', None),
+                        "tags": tags,
                     })
                 # Handle Mount objects (nested routers)
                 elif hasattr(route, 'path') and hasattr(route, 'app'):
                     mount_path = route.path
                     if base_path:
                         mount_path = f"{base_path.rstrip('/')}{mount_path}"
+                    nested_tags = tags + getattr(route.app, "tags", [])
                     if hasattr(route.app, 'routes'):
-                        collect_routes(route.app.routes, mount_path)
+                        collect_routes(route.app.routes, mount_path, nested_tags)
         
         collect_routes(routes)
         
@@ -170,6 +186,10 @@ def generate_openapi_schema(
                     summary = ""
                     description = ""
                     request_body = None
+                    parameters: List[Dict[str, Any]] = []
+                    path_params = {
+                        m.group(1) for m in re.finditer(r"{([^}]+)}", path or "")
+                    }
                     
                     if endpoint:
                         if hasattr(endpoint, '__doc__') and endpoint.__doc__:
@@ -179,8 +199,6 @@ def generate_openapi_schema(
 
                         # Infer request body schema from endpoint annotations
                         try:
-                            import inspect
-                            from typing import get_origin, get_args
                             from pydantic import BaseModel
                             sig = inspect.signature(endpoint)
                             for param in sig.parameters.values():
@@ -207,21 +225,49 @@ def generate_openapi_schema(
                                     request_body = {
                                         "required": True,
                                         "content": {
-                                            "application/json": {
+                                            "application/x-www-form-urlencoded": {
                                                 "schema": {"$ref": f"#/components/schemas/{model_name}"}
                                             },
-                                            "application/x-www-form-urlencoded": {
+                                            "multipart/form-data": {
                                                 "schema": {"$ref": f"#/components/schemas/{model_name}"}
                                             }
                                         }
                                     }
                                     break
+                                else:
+                                    # Treat simple annotated params as path/query parameters
+                                    param_in = "path" if param.name in path_params else "query"
+                                    parameters.append(
+                                        {
+                                            "name": param.name,
+                                            "in": param_in,
+                                            "required": True
+                                            if param_in == "path"
+                                            or param.default is inspect._empty
+                                            else False,
+                                            "schema": _schema_from_annotation(annotation),
+                                        }
+                                    )
                         except Exception:
                             pass
+
+                    # Ensure all path parameters appear in schema even if not in the
+                    # endpoint signature (since Starlette passes them via request).
+                    for path_param in path_params:
+                        if not any(p.get("name") == path_param for p in parameters):
+                            parameters.append(
+                                {
+                                    "name": path_param,
+                                    "in": "path",
+                                    "required": True,
+                                    "schema": {"type": "string"},
+                                }
+                            )
                     
                     schema["paths"][path][method_lower] = {
                         "summary": summary,
                         "description": description,
+                        "tags": route_info.get("tags") or [],
                         "responses": {
                             "200": {
                                 "description": "Successful response",
@@ -232,9 +278,10 @@ def generate_openapi_schema(
                                 }
                             }
                         },
+                        **({"parameters": parameters} if parameters else {}),
                         **({"requestBody": request_body} if request_body else {})
                     }
-    
+
     return schema
 
 
@@ -269,4 +316,3 @@ def setup_openapi(app, docs_url: str = "/docs", openapi_url: str = "/openapi.jso
     
     # Add Swagger UI endpoint
     app.add_route(docs_url, swagger_ui, methods=["GET"])
-
