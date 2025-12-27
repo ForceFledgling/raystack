@@ -36,6 +36,7 @@ async def list_items(request: Request):
     items = await ItemModel.objects.all()
     return JSONResponse([Item.from_orm(obj).dict() for obj in items])
 ```
+> QuerySets are awaitable; you don't need `.execute()` - await the call directly.
 
 ## Sync vs async mode
 The driver in `URL` decides:

@@ -84,7 +84,7 @@ article = await Article.objects.create(title="Hello", content="World", author_id
 user = await UserModel.objects.get(id=1)
 
 # Filter
-users = await UserModel.objects.filter(age__gte=25).execute()
+users = await UserModel.objects.filter(age__gte=25)
 
 # Update
 user.name = "Jane Doe"
