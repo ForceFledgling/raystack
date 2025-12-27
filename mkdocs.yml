@@ -1,0 +1,47 @@
+site_name: Raystack
+site_description: "Starlette speed with Django-style ergonomics"
+site_url: https://github.com/ForceFledgling/raystack
+repo_url: https://github.com/ForceFledgling/raystack
+repo_name: ForceFledgling/raystack
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.tabs
+    - navigation.expand
+    - navigation.sections
+    - search.highlight
+    - content.code.copy
+    - toc.integrate
+  palette:
+    - scheme: default
+      primary: blue
+      accent: indigo
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - footnotes
+  - attr_list
+  - def_list
+  - tables
+  - md_in_html
+
+nav:
+  - Overview: index.md
+  - Getting started: getting-started.md
+  - Project structure: project-structure.md
+  - Routing and requests: routing.md
+  - Data and ORM: persistence.md
+  - Templates and static files: templates.md
+  - CLI commands: commands.md
+  - OpenAPI and Swagger: openapi.md
+  - Settings: settings.md
+  - Contributing: contributing.md
