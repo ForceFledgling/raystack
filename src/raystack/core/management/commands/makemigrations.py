@@ -202,10 +202,15 @@ class Command(BaseCommand):
                 pass
             # Admin models are now in project apps, not in framework
             
-            # Import models from project apps
+            # Import models from project apps based on INSTALLED_APPS
             try:
-                import apps.home.models
-            except ImportError:
+                for app_path in getattr(settings, 'INSTALLED_APPS', []):
+                    try:
+                        __import__(f"{app_path}.models")
+                    except ImportError:
+                        # Skip if the app has no models module
+                        continue
+            except Exception:
                 pass
                 
         except ImportError as e:

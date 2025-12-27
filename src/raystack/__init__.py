@@ -4,9 +4,11 @@ import os
 import logging
 # import importlib.util
 import importlib
+import sqlite3
 
 from starlette.applications import Starlette
 from starlette.staticfiles import StaticFiles
+from starlette.responses import JSONResponse
 
 from raystack.conf import settings
 from raystack import shortcuts
@@ -41,6 +43,7 @@ class Raystack(Starlette):
         self.include_templates()
         self.include_static()
         self.include_middleware()
+        self.include_exception_handlers()
 
     def include_routers(self):
         # Check and import installed applications
@@ -107,6 +110,19 @@ class Raystack(Starlette):
                     logger.info(f"✅'{middleware_path}'")
                 except Exception as e:
                     logger.warning(f"⚠️ Failed to load middleware '{middleware_path}': {e}")
+    
+    def include_exception_handlers(self):
+        """Attach framework-level exception handlers."""
+        async def db_operational_error_handler(request, exc: sqlite3.OperationalError):
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "message": "Database error. Run 'raystack makemigrations' and 'raystack migrate' before calling this endpoint.",
+                    "detail": str(exc),
+                },
+            )
+
+        self.add_exception_handler(sqlite3.OperationalError, db_operational_error_handler)
     
     def include_openapi(self):
         """Include OpenAPI/Swagger UI documentation."""

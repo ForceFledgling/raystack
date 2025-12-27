@@ -3,7 +3,8 @@ import pathlib
 # Base project directory
 BASE_DIR = pathlib.Path(__file__).resolve().parent.parent
 
-# Database settings
+# Database settings (optional). The starter API works without the ORM;
+# comment this block out until you add real models.
 DATABASES = {
     'default': {
         'ENGINE': 'raystack.core.database.sqlalchemy',
@@ -25,8 +26,7 @@ DEBUG = True
 
 INSTALLED_APPS = [
     # Add your apps here
-    # Example: 'apps.admin' for admin interface
-    'apps.home',
+    'app',
 ]
 
 # Templates are optional - uncomment if you need template rendering (requires jinja2)

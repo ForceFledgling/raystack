@@ -1,8 +1,14 @@
-from raystack.compat import APIRouter
+from raystack.compat import APIRouter, JSONResponse, Request
 
-from .api import router as api_router
-from .urls import router as urls_router
+from {{ app_name }}.api import router as api_router
+
 
 router = APIRouter()
-router.include_router(urls_router, include_in_schema=False)
-router.include_router(api_router, prefix="/api", tags=[])
+
+
+@router.get("/")
+def home(request: Request):
+    return JSONResponse({"message": "Welcome to Raystack", "app": "{{ app_name }}"})
+
+
+router.include_router(api_router)
